@@ -1,8 +1,8 @@
 angular.module('project', ['ngRoute', 'firebase']).
-  value('fbURL', 'https://cc-sample.firebaseio.com/').
-  factory('Projects', function(angularFireCollection, fbURL) {
+  value('fbURL', 'https://popping-fire-2063.firebaseio.com/').
+  factory('Projects', function($firebase, fbURL) {
     var fbRef = new Firebase(fbURL);
-    return angularFireCollection(fbRef);
+    return $firebase(fbRef).$asArray();
   }).
   config(function($routeProvider) {
     $routeProvider.
@@ -10,6 +10,38 @@ angular.module('project', ['ngRoute', 'firebase']).
       when('/edit/:projectId', {controller:EditCtrl, templateUrl:'detail.html'}).
       when('/new', {controller:CreateCtrl, templateUrl:'detail.html'}).
       otherwise({redirectTo:'/'});
+  }).
+  filter('searchTermHighlight', function($sce) {
+    return function(text, phrase) {
+      if (phrase)
+      {
+        text = text.replace(
+          new RegExp('('+phrase+')', 'gi'),
+          '<span class="searchTermHighlight">$1</span>');
+      }
+      
+      return $sce.trustAsHtml(text)
+    }
+  }).
+  filter('intToStars', function($sce) {
+    return function(int) {
+      if (int == undefined)
+          return '';
+
+      var str = '';
+
+      for (var i=1; i<=5; i++)
+      {
+        str += '<span class="icon-star';
+
+        if (int < i)
+            str += '-empty';
+
+        str += '"></span>';
+      }
+
+      return $sce.trustAsHtml(str);
+    }
   });
  
 function ListCtrl($scope, Projects) {
@@ -18,28 +50,30 @@ function ListCtrl($scope, Projects) {
  
 function CreateCtrl($scope, $location, $timeout, Projects) {
   $scope.save = function() {
-    Projects.add($scope.project, function() {
-      $timeout(function() { $location.path('/'); });
+    Projects.$add($scope.project).then(function() {
+      $location.path('/');
     });
   }
 }
  
-function EditCtrl($scope, $location, $routeParams, angularFire, fbURL) {
+function EditCtrl($scope, $location, $routeParams, $firebase, fbURL) {
   var fbRef = new Firebase(fbURL + $routeParams.projectId);
-  angularFire(fbRef, $scope, 'remote', {}).
-  then(function() {
-    $scope.project = angular.copy($scope.remote);
-    $scope.project.$id = $routeParams.projectId;
-    $scope.isClean = function() {
-      return angular.equals($scope.remote, $scope.project);
-    }
+  var sync = $firebase(fbRef);
+  var syncObj = sync.$asObject();
+  
+  syncObj.$loaded().then(function() {
+    syncObj.$bindTo($scope, 'project')
+  })
+  .then(function() {
     $scope.destroy = function() {
-      $scope.remote = null;
-      $location.path('/');
+      sync.$remove().then(function() {
+        $location.path('/');
+      });
     };
     $scope.save = function() {
-      $scope.remote = angular.copy($scope.project);
-      $location.path('/');
+      syncObj.$save($scope.project).then(function() {
+        $location.path('/');
+      });
     };
   });
 }

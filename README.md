@@ -1,7 +1,7 @@
 sample-project
 ==============
 
-*A sample project using AgularJS and Firebase*
+*A sample project using AngularJS and Firebase*
 
 This is a very simple HTTP link storage system. There are two views: a list of links and a form to create and edit links.
 
