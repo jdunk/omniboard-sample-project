@@ -1,5 +1,5 @@
 ##Omniboard Code Challenge##
-This is a code challenge I (jdunk) was given in Oct 2014. A description of my submission is immediately below. The original instructions are below that.
+This is a code challenge I (jdunk) was given in Oct 2014. A description of my submission is immediately below. The original instructions are below that. For better context and chronological flow, read the original instructions first.
 
 ##My Submission##
 Below is the original text that accompanied [my submission](https://github.com/jdunk/omniboard-sample-project/commit/ab9aaede66072f481c2da44fce9abcb02a50c240):
